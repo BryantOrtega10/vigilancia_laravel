@@ -6,6 +6,7 @@ use App\Http\Controllers\MinutaController;
 use App\Http\Controllers\NovParqueaderoController;
 use App\Http\Controllers\PropiedadesController;
 use App\Http\Controllers\RondasController;
+use App\Http\Controllers\UsuariosController;
 use App\Http\Controllers\VisitasController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -128,4 +129,17 @@ Route::group([
     Route::get("/", [VisitasController::class, 'mostrarTabla'])->name("visitas.tabla");
     Route::get("/ver/{id}", [VisitasController::class, 'verDetalles'])->name("visitas.verDetalles");
     Route::get("/pdf/{id}", [VisitasController::class, 'generarPdf'])->name("visitas.pdf");
+});
+
+
+Route::group([
+    'prefix' => 'usuarios',
+    'middleware' => ['auth', 'user-role:admin']
+], function () {
+    Route::get("/", [UsuariosController::class, 'mostrarTabla'])->name("usuarios.tabla");
+    Route::get("/agregar", [UsuariosController::class, 'mostrarAgregar'])->name("usuarios.agregar");
+    Route::post("/agregar", [UsuariosController::class, 'agregar']);
+    Route::get("/modificar/{id}", [UsuariosController::class, 'mostrarModificar'])->name("usuarios.modificar");
+    Route::post("/modificar/{id}", [UsuariosController::class, 'modificar']);
+    Route::post("/eliminar/{id}", [UsuariosController::class, 'eliminar'])->name("usuarios.eliminar");
 });

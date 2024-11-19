@@ -346,7 +346,13 @@ return [
             'active' => ['visitas*'],
             'icon' => 'fas fa-id-card',
         ],
-        
+        [
+            'text' => 'Usuarios',
+            'url' => 'usuarios/',
+            'can' => 'usuarios',
+            'active' => ['usuarios*'],
+            'icon' => 'fas fa-user',
+        ],
     ],
 
     /*

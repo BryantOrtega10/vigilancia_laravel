@@ -46,4 +46,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function user_sede(){
+        return $this->hasMany(UserSedeModel::class, "fk_user","id");
+    }
+
+    public function sedes_txt(){
+        $arr = array();
+        if($this->user_sede == null){
+            return '';
+        }
+
+        foreach($this->user_sede as $user_sede){
+            array_push($arr, $user_sede->sede->nombre);
+        }
+        return implode(",",$arr);
+    }
 }
