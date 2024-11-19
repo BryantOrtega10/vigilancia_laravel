@@ -24,5 +24,21 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('propiedad', function (User $user) {
             return (strtolower($user->rol) == 'admin');
         });
+        Gate::define('rondas', function (User $user) {
+            return (strtolower($user->rol) == 'admin');
+        });
+        Gate::define('novedades', function (User $user) {
+            return (strtolower($user->rol) == 'admin');
+        });
+        Gate::define('minutas', function (User $user) {
+            return (strtolower($user->rol) == 'admin');
+        });
+        Gate::define('paquetes', function (User $user) {
+            return (strtolower($user->rol) == 'admin');
+        });
+        Gate::define('visitas', function (User $user) {
+            return (strtolower($user->rol) == 'admin');
+        });
+        
     }
 }

@@ -311,6 +311,42 @@ return [
             'active' => ['propiedad*'],
             'icon' => 'fas fa-building',
         ],
+        [
+            'text' => 'Rondas',
+            'url' => 'rondas/',
+            'can' => 'rondas',
+            'active' => ['rondas*'],
+            'icon' => 'fas fa-qrcode',
+        ],
+        [
+            'text' => 'Novedades Parqueadero',
+            'url' => 'novedades/',
+            'can' => 'novedades',
+            'active' => ['novedades*'],
+            'icon' => 'fas fa-car',
+        ],
+        [
+            'text' => 'Minutas',
+            'url' => 'minutas/',
+            'can' => 'minutas',
+            'active' => ['minutas*'],
+            'icon' => 'fas fa-book',
+        ],
+        [
+            'text' => 'Buzón',
+            'url' => 'paquetes/',
+            'can' => 'paquetes',
+            'active' => ['paquetes*'],
+            'icon' => 'fas fa-envelope',
+        ],
+        [
+            'text' => 'Entradas/Salidas',
+            'url' => 'visitas/',
+            'can' => 'visitas',
+            'active' => ['visitas*'],
+            'icon' => 'fas fa-id-card',
+        ],
+        
     ],
 
     /*

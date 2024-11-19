@@ -23,3 +23,7 @@ span.quitar-vehiculo {
     min-height: 40px;
     display: inline-block;
 }
+
+.codigoQR_Preview{
+    width: 100px;
+}

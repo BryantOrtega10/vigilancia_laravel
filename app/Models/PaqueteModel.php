@@ -15,6 +15,8 @@ class PaqueteModel extends Model
         "fk_propiedad",
         "fk_user_recibe",
         "fk_user_entrega",
+        "fecha_recepcion",
+        "fecha_entrega"
     ];
 
     public function propiedad(){
