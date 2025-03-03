@@ -35,7 +35,8 @@
     <div class="card">
         <div class="card-header">
             <div class="row">
-                <div class="col-6">{{$grupo->tipo_gr_propiedad->nombre}}: {{$grupo->nombre}}</div>
+                
+                <div class="col-6">@isset($grupo->fk_tipo_gr_propiedad) {{$grupo->tipo_gr_propiedad->nombre}}: @endisset{{$grupo->nombre}}</div>
                 <div class="col-6 text-right">
                     <a href="{{route('propiedad.grupo.item.agregar',['id' => $grupo->id])}}" class="btn btn-outline-secondary" type="button"><i class="fas fa-plus"></i> Nueva propiedad</a>
                     <a href="{{route('propiedad.grupo.modificar',['id' => $grupo->id])}}" class="btn btn-outline-secondary"><i class="fas fa-pen"></i></a>

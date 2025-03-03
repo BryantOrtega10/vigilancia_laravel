@@ -59,7 +59,7 @@
                 <div class="row">
                     @foreach ($fotos as $foto)
                         <figure class="col-md-4 col-12">
-                            <img src="data:image/png;base64,{{$foto->img_base64}}" class="w-100" />
+                            <img src="data:image/png;base64,{{$foto->img_base64}}" class="w-100" style="max-width: 100%; max-height: 100%;" />
                         </figure>
                     @endforeach
                 </div>

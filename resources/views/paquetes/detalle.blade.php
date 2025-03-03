@@ -50,7 +50,7 @@
         <div class="row">
             @foreach ($fotos as $foto)
                 <figure class="col-md-4 col-12">
-                    <img src="{{Storage::url('paquetes/min_'.$foto->ruta)}}" class="w-100" />
+                    <img src="{{Storage::url('paquetes/max_'.$foto->ruta)}}" class="w-100" />
                 </figure>
             @endforeach
         </div>

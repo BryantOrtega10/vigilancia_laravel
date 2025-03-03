@@ -36,6 +36,15 @@ Route::get("storage-link", function () {
 	);
 });
 
+Route::get('/cache', function () {
+	$exitCode = Artisan::call('route:clear');
+	$exitCode = Artisan::call('view:clear');
+	$exitCode = Artisan::call('config:cache');
+	$exitCode = Artisan::call('config:clear');
+
+	return '<h3>Cache eliminado</h3>';
+});
+
 Route::group([
     'prefix' => 'propiedad',
     'middleware' => ['auth', 'user-role:admin']
@@ -46,6 +55,8 @@ Route::group([
     Route::get("/modificar/{id}", [PropiedadesController::class, 'mostrarModificar'])->name("propiedad.modificar");
     Route::post("/modificar/{id}", [PropiedadesController::class, 'modificar']);
     Route::post("/eliminar/{id}", [PropiedadesController::class, 'eliminar'])->name("propiedad.eliminar");
+
+    Route::post("/subirCSV", [PropiedadesController::class, 'subirCSV'])->name("propiedad.subirCSV");
     
     Route::get("/configurar/{id}", [PropiedadesController::class, 'mostrarConfig'])->name("propiedad.config");
         

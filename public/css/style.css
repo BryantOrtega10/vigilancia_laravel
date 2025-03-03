@@ -1,10 +1,11 @@
-.vehiculo-unidad .row{
+.vehiculo-unidad .row {
     width: calc(100% - 30px);
     display: inline-flex;
     margin-right: 10px;
 }
 
-span.quitar-vehiculo , .quitar-propiedad{
+span.quitar-vehiculo,
+.quitar-propiedad {
     cursor: pointer;
 }
 .sub-item {
@@ -12,11 +13,12 @@ span.quitar-vehiculo , .quitar-propiedad{
     text-align: center;
     padding: 10px 0px;
     border-radius: 15px;
-    background: #F0F0F0;
+    background: #f0f0f0;
+    margin-bottom: 15px;
 }
 
 .sub-item span {
-    background: #F0F0F0;
+    background: #f0f0f0;
     padding: 10px 16px;
     border-radius: 35px;
     min-width: 40px;
@@ -24,6 +26,145 @@ span.quitar-vehiculo , .quitar-propiedad{
     display: inline-block;
 }
 
-.codigoQR_Preview{
+.codigoQR_Preview {
     width: 100px;
 }
+
+.upload-progress {
+    background: url(/imgs/charge.gif);
+    background-size: 210px;
+    background-position: -36px;
+    z-index: 10;
+    width: 140px;
+    height: 140px;
+    left: 0;
+    top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+}
+
+.progress-content {
+    text-align: center;
+    font-weight: 500;
+    background: #f9f9f9;
+    margin: auto;
+    margin-bottom: 20px;
+    padding: 20px 0px;
+    display: none;
+}
+
+.progress-content.active {
+    display: block;
+}
+
+.response-content div {
+    width: 100%;
+    min-height: 54px;
+    background: #ffffff;
+    box-sizing: border-box;
+    border-radius: 3px;
+    margin-bottom: 15px;
+    background: url(/imgs/excel.png);
+    background-repeat: no-repeat;
+    padding-left: 60px;
+    background-position: 15px;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    position: relative;
+    padding-right: 50px;
+}
+
+.response-success {
+    border: 1px solid #2e7d32;
+    box-sizing: border-box;
+    box-shadow: 0px 2px 9px rgb(46 125 50 / 15%);
+}
+
+.response-error {
+    border: 1px solid #7d2e2e;
+    box-shadow: 0px 2px 9px rgb(125 46 46 / 15%);
+}
+
+button.close-response {
+    position: absolute;
+    right: 15px;
+    background: url(/imgs/close.png);
+    width: 30px;
+    height: 22px;
+    border: 0;
+    cursor: pointer;
+}
+
+.btn-excel {
+    background: #f1f1f1;
+    color: #7e7e7e;
+    
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.btn-excel img {
+    margin-right: 5px;
+}
+
+
+label.upload-box-label {
+    font-size: 16px;
+    color: #9c9c9c;
+  }
+  
+  .upload-box {
+    text-align: center;
+    background: #f6f6f6;
+    position: relative;
+    padding: 90px 0px;
+    border: 2px dashed #c6c6c6;
+    border-radius: 4px;
+    color: #bfbfbf;
+    user-select: none;
+  }
+  
+  .upload-box input {
+    display: none;
+  }
+  
+  .upload-box label,
+  .upload-box button {
+    position: relative;
+    z-index: 9;
+  }
+  
+  .upload-box:before {
+    content: "";
+    border: 10px solid #fff;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 5px;
+  }
+  
+  .upload-box button.upload-btn {
+    background: linear-gradient(180deg, #fefefe 25.52%, #f1f1f1 100%);
+    box-sizing: border-box;
+    border-radius: 3px;
+    border: 1px solid #dedede;
+    color: #a9a9a9;
+    padding: 8px 20px;
+    font-weight: 500;
+    
+    margin-top: 15px;
+  }
+  
+  .upload-box button.upload-btn img {
+    margin-right: 5px;
+  }
+  
+  .upload-box[drop-active] {
+    border-color: #000;
+  }
+  

@@ -36,7 +36,7 @@ class NovParqueaderoController extends Controller
         $fotos = FotoModel::where("fk_novedad_veh","=",$id)->get();
 
         foreach($fotos as $foto){
-            $path = 'novedades/min_'.$foto->ruta;
+            $path = 'novedades/max_'.$foto->ruta;
             if (!Storage::disk('public')->exists($path)) {
                 return response()->json(['error' => 'Archivo no encontrado'], 404);
             }
@@ -50,7 +50,6 @@ class NovParqueaderoController extends Controller
             'fotos' => $fotos
         ])
         ->setPaper('A4');
-        
         return $pdf->download("Novedad ".$novedad->id." en ".$novedad->sede_txt().".pdf");
     }
     

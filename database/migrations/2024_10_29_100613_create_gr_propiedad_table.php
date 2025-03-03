@@ -23,7 +23,7 @@ return new class extends Migration
             $table->id();
             $table->string("nombre");
 
-            $table->bigInteger("fk_tipo_gr_propiedad")->unsigned();
+            $table->bigInteger("fk_tipo_gr_propiedad")->unsigned()->nullable();
             $table->foreign('fk_tipo_gr_propiedad')->references('id')->on('tipo_gr_propiedad')->onDelete('cascade');
             $table->index('fk_tipo_gr_propiedad');
 

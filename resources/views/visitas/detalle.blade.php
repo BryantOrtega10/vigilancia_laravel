@@ -25,6 +25,24 @@
         <span>{{ date("H:i", strtotime($visita->fecha_entrada)) }}</span>
     </div>
 </div>
+@if ($visita->fecha_salida != null)
+<br>
+    <h5>Datos de la salida</h5>
+    <div class="row">
+        <div class="col-md-3 col-12">
+            <b>Fecha de salida</b><br>
+            <span>{{ date("Y/m/d", strtotime($visita->fecha_salida)) }}</span>
+        </div>
+        <div class="col-md-3 col-12">
+            <b>Hora de salida</b><br>
+            <span>{{ date("H:i", strtotime($visita->fecha_salida)) }}</span>
+        </div>
+        <div class="col-md-3 col-12">
+            <b>Vigilante salida</b><br>
+            <span>{{ $visita->user_salida->name }}</span>
+        </div>
+    </div>
+@endif
 <br>
 <h5>Datos del visitante</h5>
 <div class="row">

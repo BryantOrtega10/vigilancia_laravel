@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Propiedad\GrupoPropiedadRequest;
 use App\Http\Requests\Propiedad\ItemRequest;
 use App\Http\Requests\Propiedad\PropiedadRequest;
+use App\Http\Utils\Funciones;
 use App\Models\GrPropiedadModel;
 use App\Models\PaqueteModel;
 use App\Models\PropiedadModel;
@@ -14,10 +15,13 @@ use App\Models\TipoGrPropiedadModel;
 use App\Models\TipoSedeModel;
 use App\Models\VehiculoModel;
 use App\Models\VisitaModel;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+use League\Csv\Reader;
 
 class PropiedadesController extends Controller
 {
@@ -312,5 +316,129 @@ class PropiedadesController extends Controller
         $propiedad->delete();
 
         return redirect(route('propiedad.config', ['id' => $fk_sede]))->with('mensaje', 'Propiedad eliminada correctamente');
+    }
+
+    public function subirCSV(Request $request){
+        $errors = array();
+        $folder = "csv/";
+        $file_name =  time() . "_.csv";
+        Funciones::subirBase64($request->file64, $folder . $file_name);
+        $contents = Storage::disk('public')->get($folder . $file_name);
+        $reader = Reader::createFromString($contents);
+        $reader->setDelimiter(',');
+        $cuentaSubidos = 0;
+        foreach ($reader as $index => $row) {
+            try {
+                // Verificar si tiene puntos y coma para que re haga la columna
+                if (strpos($row[0], ";") !== false) {
+                    $row = explode(";", $row[0]);
+                }
+
+                if ($index == 0 && strtolower($row[0]) !== "sede") {
+                    /* Validamos que tenga las cabeceras */
+                    return response()->json([
+                        "success" => false,
+                        "message" => "Agrege los titulos al archivo"
+                    ]);
+                } else if ($index == 0) {
+                    /* Si tiene cabeceras las omitimos y continuamos con la data */
+                    continue;
+                }
+                $tiene_texto = false;
+                foreach ($row as $key => $valor) {
+                    if ($valor == "") {
+                        $row[$key] = null;
+                    } else {
+                        $tiene_texto = true;
+                        $row[$key] = trim(utf8_encode($row[$key]));
+                    }
+                }
+
+                if (!$tiene_texto) {
+                    continue;
+                }
+
+                //0 = sede
+                //1 = grupo
+                //2 = propiedad
+                //3 = nombres propietario
+                //4 = apellidos propietario
+                //5 = celular principal
+                //6 = celular secundario
+                //7 = email
+                //8 = tipo_vehiculo1
+                //9 = vehiculo1
+
+                //Buscar Sede
+                $sede = SedeModel::where("nombre","like",trim($row[0]))->first();
+                if(!isset($sede)){
+                    array_push($errors, "Sede no encontrada en la linea " . ($index + 1));
+                    continue;
+                }
+
+                $grupo = GrPropiedadModel::where("nombre","like",trim($row[1]))->where("fk_sede","=",$sede->id)->first();
+                if(!isset($grupo)){
+                    $grupo = new GrPropiedadModel();
+                    $grupo->nombre = trim($row[1]);
+                    $grupo->fk_sede = $sede->id;
+                    $grupo->save();
+                }
+
+                $propiedadVerif = PropiedadModel::where("nombre","like",trim($row[2]))->where("fk_gr_propiedad","=",$grupo->id)->first();
+                if(isset($propiedadVerif)){
+                    array_push($errors, "Ya existe la propiedad ".$row[2]." en la linea " . ($index + 1));
+                    continue;
+                }
+
+                $propietario = new PropietarioModel();
+                $propietario->nombres = trim($row[3]);
+                $propietario->apellidos = trim($row[4]);
+                $propietario->celular_p = trim($row[5]);
+                $propietario->celular_s = trim($row[6]);
+                $propietario->email = trim($row[7]);
+                $propietario->save();
+                
+                
+                $propiedad = new PropiedadModel();
+                $propiedad->nombre = trim($row[2]);
+                $propiedad->fk_propietario = $propietario->id;
+                $propiedad->fk_gr_propiedad = $grupo->id;
+                $propiedad->save();
+
+                
+                for($i=8; $i<=100; $i=$i+2){
+                    if(!isset($row[$i]) || !isset($row[$i + 1])){
+                        break;
+                    }
+
+                    $tipo_vehiculo = $row[$i];
+                    $placa = $row[$i + 1];
+                    $vehiculo = new VehiculoModel();
+                    $vehiculo->placa = $placa;
+                    $vehiculo->fk_propiedad = $propiedad->id;
+                    $vehiculo->fk_tipo_vehiculo = $tipo_vehiculo;
+                    $vehiculo->save();
+                }
+                $cuentaSubidos++;
+                //Cargar propiedades
+                
+
+            }
+            catch (Exception $e) {
+                array_push($errors, "Error " . $e->getMessage() . ", line: " . $e->getLine() . " on row " . ($index + 1));
+            }
+        }
+        if (sizeof($errors) > 0) {
+            return response()->json([
+                "success" => false,
+                "message" => implode("<br>", $errors)
+            ]);
+        } else {
+            return response()->json([
+                "success" => true,
+                "message" => "Propiedades agregadas!, ".$cuentaSubidos." registros agregados"
+            ]);
+        }
+        
     }
 }

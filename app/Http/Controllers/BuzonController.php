@@ -39,7 +39,7 @@ class BuzonController extends Controller
         $fotos = FotoModel::where("fk_paquete","=",$id)->get();
 
         foreach($fotos as $foto){
-            $path = 'paquetes/min_'.$foto->ruta;
+            $path = 'paquetes/max_'.$foto->ruta;
             if (!Storage::disk('public')->exists($path)) {
                 return response()->json(['error' => 'Archivo no encontrado'], 404);
             }
