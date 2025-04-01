@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\MinutaController;
 use App\Http\Controllers\Api\NovVehiculosController;
 use App\Http\Controllers\Api\PropiedadController;
 use App\Http\Controllers\Api\RecorridoController;
+use App\Http\Controllers\Api\RiesgosController;
 use App\Http\Controllers\Api\SedeController;
 use App\Http\Controllers\Api\TipoVehiculoController;
 use App\Http\Controllers\Api\VisitaController;
@@ -35,3 +36,9 @@ Route::put("/visita/{id}", [VisitaController::class, 'regitrarSalida'])->middlew
 Route::post("/novedad-vehiculo", [NovVehiculosController::class, 'create'])->middleware('auth:sanctum');
 Route::post("/minuta", [MinutaController::class, 'create'])->middleware('auth:sanctum');
 Route::post("/correspondencia", [CorrespondenciaController::class, 'create'])->middleware('auth:sanctum');
+
+Route::prefix('riesgo')->middleware("auth:sanctum")->group(function () {
+    Route::get("/", [RiesgosController::class, 'show']);
+    Route::post("/", [RiesgosController::class, 'create']);
+    Route::put("/{id}", [RiesgosController::class, 'update']);    
+});

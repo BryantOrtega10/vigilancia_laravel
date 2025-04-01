@@ -140,6 +140,38 @@
                         </div>
                     @endforeach
                 </div>
+                <div class="row mt-3">
+                    <div class="col-md-2 col-8">
+                        <h5>Residentes</h5>
+                    </div>
+                    <div class="col-md-10 col-4">
+                        <button class="btn btn-secondary agregar-residente" type="button"><i
+                                class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="residentes-cont">
+                    @foreach ($residentes as $i => $residente)
+                        <div class="row align-items-center residente-unidad">
+                            <div class="col-md-3 col-6">
+                                <div class="form-group">
+                                    <label for="residente_n_{{ $i }}">Nombre:</label>
+                                    <input type="text" class="form-control" id="residente_n_{{ $i }}"
+                                        name="residente_n[]" placeholder="Nombre residente:" value="{{ old('residente_n.' . $i,$residente->nombre) }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="form-group">
+                                    <label for="residente_c_{{ $i }}">Celular:</label>
+                                    <input type="text" class="form-control" id="residente_c_{{ $i }}"
+                                        name="residente_c[]" placeholder="Celular residente:" value="{{ old('residente_c.' . $i,$residente->celular) }}">
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <span class="quitar-residente"><i class="fas fa-trash"></i></span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
             <div class="text-right card-footer">
                 <input type="submit" class="btn btn-flat btn-lg btn-primary" value="Modificar" />
@@ -178,6 +210,32 @@
 
             $("body").on("click", ".quitar-vehiculo", function(e) {
                 $(e.target).closest(".vehiculo-unidad").remove();
+            });
+
+            $("body").on("click",".agregar-residente", (e) => {
+                $(".residentes-cont").append(`
+                    <div class="row align-items-center residente-unidad">
+                        <div class="col-md-3 col-6">
+                            <div class="form-group">
+                                <label for="residente_n_${$(".residente-unidad").length}">Nombre:</label>
+                                <input type="text" class="form-control" id="residente_n_${$(".residente-unidad").length}" name="residente_n[]" placeholder="Nombre residente:" >
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="form-group">
+                                <label for="residente_c_${$(".residente-unidad").length}">Celular:</label>
+                                <input type="text" class="form-control" id="residente_c_${$(".residente-unidad").length}" name="residente_c[]" placeholder="Celular residente:" >
+                            </div>
+                        </div>
+                        <div class="col-1">
+                            <span class="quitar-residente"><i class="fas fa-trash"></i></span>
+                        </div>
+                    </div>
+                `);
+            })
+
+            $("body").on("click",".quitar-residente", function(e) {
+                $(e.target).closest(".residente-unidad").remove();
             });
         })
     </script>

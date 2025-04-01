@@ -10,6 +10,7 @@ use App\Models\GrPropiedadModel;
 use App\Models\PaqueteModel;
 use App\Models\PropiedadModel;
 use App\Models\PropietarioModel;
+use App\Models\ResidenteModel;
 use App\Models\SedeModel;
 use App\Models\TipoGrPropiedadModel;
 use App\Models\TipoSedeModel;
@@ -175,17 +176,20 @@ class PropiedadesController extends Controller
         }
         $errors = Session::get('errors');
         $vehiculos = 0;
+        $residentes = 0;
         if (isset($errors)) {
             $olds = Session::getOldInput();
             $vehiculos = sizeof($olds['vehiculo']);
-        }
+            $residentes = sizeof($olds['residente_n']);
+        }        
 
 
         return view('propiedad.item.agregar', [
             'sede' => $sede,
             'grupo' => $grupo,
             'nombre_predeterminado' => $nombre_predeterminado,
-            'vehiculos' => $vehiculos
+            'vehiculos' => $vehiculos,
+            'residentes' => $residentes
         ]);
     }
 
@@ -222,6 +226,18 @@ class PropiedadesController extends Controller
                 }
             }
         }
+
+        if($request->input("residente_n") != null){
+            foreach ($request->input("residente_n") as $row => $residente_n) {
+                if ($residente_n != "") {
+                    $residente = new ResidenteModel();
+                    $residente->nombre = $residente_n;
+                    $residente->celular = $request->input("residente_c")[$row];
+                    $residente->fk_propiedad = $propiedad->id;
+                    $residente->save();
+                }
+            }
+        }
         $id_sede = $propiedad->gr_propiedad->fk_sede;
         return redirect(route('propiedad.config', ['id' => $id_sede]))->with('mensaje', 'Propiedad agregada correctamente');
     }
@@ -233,13 +249,15 @@ class PropiedadesController extends Controller
         $sede = $grupo->sede;
         $propietario = $propiedad->propietario;
         $vehiculos = VehiculoModel::where("fk_propiedad","=",$id)->get();
+        $residentes = ResidenteModel::where("fk_propiedad","=",$id)->get();
 
         return view('propiedad.item.modificar', [
             'sede' => $sede,
             'grupo' => $grupo,
             'propiedad' => $propiedad,
             'propietario' => $propietario,
-            'vehiculos' => $vehiculos
+            'vehiculos' => $vehiculos,
+            'residentes' => $residentes
         ]);
     }
 
@@ -295,6 +313,32 @@ class PropiedadesController extends Controller
             }
         }
         
+
+
+        //Verificar residentes eliminados
+        if($request->input("residente_n") != null){
+            ResidenteModel::where("fk_propiedad","=",$id)
+                ->whereNotIn("nombre",$request->input("residente_n"))
+                ->delete();
+        }
+        else{
+            ResidenteModel::where("fk_propiedad","=",$id)->delete();
+        }
+
+        if($request->input("residente_n") != null){
+            foreach ($request->input("residente_n") as $row => $residente_n) {
+                if ($residente_n != "") {
+                    $residente = ResidenteModel::where("fk_propiedad","=",$id)->where("nombre","=",$residente_n)->first();
+                    if(!isset($residente)){
+                        $residente = new ResidenteModel();
+                    }
+                    $residente->nombre = $residente_n;
+                    $residente->celular = $request->input("residente_c")[$row];
+                    $residente->fk_propiedad = $propiedad->id;
+                    $residente->save();
+                }
+            }
+        }
         $id_sede = $propiedad->gr_propiedad->fk_sede;
         return redirect(route('propiedad.config', ['id' => $id_sede]))->with('mensaje', 'Propiedad modificada correctamente');
     }

@@ -23,5 +23,8 @@ class PropiedadModel extends Model
         return $this->belongsTo(GrPropiedadModel::class,'fk_gr_propiedad','id');
     }
 
+    public function residentes(){
+        return $this->hasMany(ResidenteModel::class,'fk_propiedad','id');
+    }
 
 }

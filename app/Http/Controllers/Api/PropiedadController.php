@@ -21,7 +21,7 @@ class PropiedadController extends Controller
      * 
 	 */
     public function getList(Request $request){
-        $propiedades = PropiedadModel::with('propietario')->where("fk_gr_propiedad","=",$request->input("idGrupo"))->orderBy("nombre")->get();
+        $propiedades = PropiedadModel::with('propietario')->with("residentes")->where("fk_gr_propiedad","=",$request->input("idGrupo"))->orderBy("nombre")->get();
         
 
         return response()->json([

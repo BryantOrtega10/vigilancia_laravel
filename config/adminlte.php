@@ -347,12 +347,21 @@ return [
             'icon' => 'fas fa-id-card',
         ],
         [
+            'text' => 'Riesgos',
+            'url' => 'riesgos/',
+            'can' => 'riesgos',
+            'active' => ['riesgos*'],
+            'icon' => 'fas fa-exclamation-triangle',
+        ],
+        [
             'text' => 'Usuarios',
             'url' => 'usuarios/',
             'can' => 'usuarios',
             'active' => ['usuarios*'],
             'icon' => 'fas fa-user',
         ],
+
+        
     ],
 
     /*

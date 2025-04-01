@@ -5,6 +5,7 @@ use App\Http\Controllers\BuzonController;
 use App\Http\Controllers\MinutaController;
 use App\Http\Controllers\NovParqueaderoController;
 use App\Http\Controllers\PropiedadesController;
+use App\Http\Controllers\RiesgosController;
 use App\Http\Controllers\RondasController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Controllers\VisitasController;
@@ -140,6 +141,17 @@ Route::group([
     Route::get("/", [VisitasController::class, 'mostrarTabla'])->name("visitas.tabla");
     Route::get("/ver/{id}", [VisitasController::class, 'verDetalles'])->name("visitas.verDetalles");
     Route::get("/pdf/{id}", [VisitasController::class, 'generarPdf'])->name("visitas.pdf");
+});
+
+Route::group([
+    'prefix' => 'riesgos',
+    'middleware' => ['auth', 'user-role:admin']
+], function () {
+    Route::get("/", [RiesgosController::class, 'mostrarTabla'])->name("riesgos.tabla");
+    Route::get("/ver/{id}", [RiesgosController::class, 'verDetalles'])->name("riesgos.verDetalles");
+    Route::post("/actualizar/{id}", [RiesgosController::class, 'actualizar'])->name("riesgos.actualizar");
+    Route::get("/matriz", [RiesgosController::class, 'mostrarFormMatriz'])->name("riesgos.matriz");
+    Route::post("/matriz", [RiesgosController::class, 'generarPdfMatriz']);
 });
 
 

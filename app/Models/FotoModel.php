@@ -13,6 +13,7 @@ class FotoModel extends Model
         "fk_minuta",
         "fk_paquete",
         "fk_novedad_veh",
+        "fk_riesgo_log",
     ];
 
     public function minuta(){
@@ -27,4 +28,7 @@ class FotoModel extends Model
         return $this->belongsTo(User::class,'fk_novedad_veh','id');
     }
 
+    public function riesgo_log(){
+        return $this->belongsTo(RiesgoLogModel::class,'fk_riesgo_log','id');
+    }
 }
