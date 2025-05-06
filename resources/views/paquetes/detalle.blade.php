@@ -26,19 +26,19 @@
     @else
         <div class="col-md-3 col-12">
             <b>Fecha</b><br>
-            <span>{{ date("Y/m/d", strtotime($paquete->fecha_recepcion)) }}</span>
+            <span>{{ date("Y/m/d", strtotime($paquete->fecha_entrega)) }}</span>
         </div>
         <div class="col-md-3 col-12">
             <b>Hora</b><br>
-            <span>{{ date("H:i", strtotime($paquete->fecha_recepcion)) }}</span>
+            <span>{{ date("H:i", strtotime($paquete->fecha_entrega)) }}</span>
         </div>
         <div class="col-md-3 col-12">
             <b>Propietario</b><br>
-            <span>{{ $paquete->propiedad->propietario->nombres }} {{ $paquete->propiedad->propietario->apellidos }}</span>
+            <span>{{ $paquete->propiedad?->propietario?->nombres }} {{ $paquete->propiedad?->propietario?->apellidos }}</span>
         </div>
         <div class="col-md-3 col-12">
             <b>Entrega</b><br>
-            <span>{{ $paquete->user_entrega->name }}</span>
+            <span>{{ $paquete->user_entrega?->name }}</span>
         </div>
     @endif
     <div class="col-12">

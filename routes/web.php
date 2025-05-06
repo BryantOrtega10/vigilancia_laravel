@@ -166,3 +166,9 @@ Route::group([
     Route::post("/modificar/{id}", [UsuariosController::class, 'modificar']);
     Route::post("/eliminar/{id}", [UsuariosController::class, 'eliminar'])->name("usuarios.eliminar");
 });
+
+Route::get('/migrate', function () {
+    $exitCode = Artisan::call('migrate');
+    //$exitCode2 = Artisan::call('db:seed');
+    return '<h3>Migraci&oacute;n completada ' . $exitCode . ' </h3>';
+});

@@ -70,7 +70,7 @@ class BuzonController extends Controller
             return throw ValidationException::withMessages(['codigo' => 'El codigo no coincide con el enviado']);
         }
 
-        $paquete->fecha_recepcion = $request->input("fecha_entrega")." ".$request->input("hora_entrega");
+        $paquete->fecha_entrega = $request->input("fecha_entrega")." ".$request->input("hora_entrega");
         $paquete->entregado = 1;
         $paquete->fk_user_entrega = Auth::user()->id;
         $paquete->save();

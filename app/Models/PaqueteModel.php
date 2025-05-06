@@ -31,10 +31,7 @@ class PaqueteModel extends Model
         return $this->belongsTo(User::class,'fk_user_entrega','id');
     }
     
-
-
-
-
-
-
+    public function fotos(){
+        return $this->hasMany(FotoModel::class, "fk_paquete", 'id');
+    }
 }

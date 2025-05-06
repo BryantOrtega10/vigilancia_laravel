@@ -31,4 +31,5 @@ class FotoModel extends Model
     public function riesgo_log(){
         return $this->belongsTo(RiesgoLogModel::class,'fk_riesgo_log','id');
     }
+        
 }

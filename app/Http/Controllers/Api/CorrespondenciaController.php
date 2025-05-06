@@ -64,4 +64,70 @@ class CorrespondenciaController extends Controller
             "codigo" => $paquete->codigo
         ]);
     }
+
+
+     /**
+     * Ver paquetes de la propiedad
+     * Permite ver los paquetes no entregados de la propiedad
+     * 
+	 * @group  v 1.0.0
+     * 
+     * 
+     * @bodyParam offset integer optional desde donde muestra los datos
+     * @bodyParam limit integer optional cuanto trae por petición
+     *
+     * @authenticated
+     * 
+     * 
+	 */
+    public function show($id, Request $request){
+
+        $limit = $request->input("limit") ?? 10;
+        $offset = $request->input("offset") ?? 0;
+        
+        $paquetes = PaqueteModel::with('fotos')
+                                ->selectRaw("paquete.id, DATE_FORMAT(paquete.fecha_recepcion,'%d/%m/%Y') as fecha_recepcion, 
+                                            DATE_FORMAT(paquete.fecha_recepcion,'%H:%i') as hora_recepcion, paquete.observacion, 
+                                            users.name as usuario_recibe")
+                    ->join("users","users.id","=","paquete.fk_user_recibe")
+                    ->where("paquete.fk_propiedad","=",$id)
+                    ->where("paquete.entregado","=",0)
+                    ->orderBy("paquete.fecha_recepcion","DESC")
+                    ->skip($offset)
+                    ->take($limit)
+                    ->get();
+                    
+       
+        $total = PaqueteModel::where("paquete.fk_propiedad","=",$id)->where("paquete.entregado","=",0)->count();
+
+        return response()->json([
+            "success" => true,
+            "message" =>  "Paquetes consultados correctamente",
+            "paquetes" => $paquetes,
+            "total" => $total
+        ]);     
+    }
+
+
+    public function update($id, Request $request){
+
+        $paquete = PaqueteModel::findOrFail($id);
+        if(trim($request->input("codigo")) != $paquete->codigo){
+            return response()->json([
+                "success" => false,
+                "message" => "El código no coincide con el paquete"
+            ], 401);
+        }
+
+        $paquete->fecha_entrega = date("Y-m-d H:i:s");
+        $paquete->entregado = 1;
+        $paquete->fk_user_entrega = Auth::user()->id;
+        $paquete->save();
+        return response()->json([
+            "success" => true,
+            "message" => "La entrega ha sido validada correctamente"
+        ]);
+
+    }
+    
 }

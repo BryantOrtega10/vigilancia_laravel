@@ -63,4 +63,43 @@ class MinutaController extends Controller
             "message" =>  "Minuta registrada correctamente"
         ]);
     }
+
+    /**
+     * Ver minuta de la sede
+     * Permite ver la minuta de la sede
+     * 
+	 * @group  v 1.0.0
+     * 
+     * 
+     * @bodyParam offset integer optional desde donde muestra los datos
+     * @bodyParam limit integer optional cuanto trae por petición
+     *
+     * @authenticated
+     * 
+     * 
+	 */
+    public function show($id, Request $request){
+
+        $limit = $request->input("limit") ?? 10;
+        $offset = $request->input("offset") ?? 0;
+        
+        $minutas = MinutaModel::selectRaw("minuta.id, DATE_FORMAT(minuta.fecha_reporte,'%d/%m/%Y') as fecha_reporte, DATE_FORMAT(minuta.fecha_reporte,'%H:%i') as hora_reporte, minuta.observacion, users.name as usuario")
+                    ->join("users","users.id","=","minuta.fk_user")
+                    ->where("minuta.fk_sede","=",$id)
+                    ->orderBy("minuta.fecha_reporte","DESC")
+                    ->skip($offset)
+                    ->take($limit)
+                    ->get();
+                    
+       
+        $total = MinutaModel::where("fk_sede","=",$id)->count();
+
+        return response()->json([
+            "success" => true,
+            "message" =>  "Minutas consultadas correctamente",
+            "minutas" => $minutas,
+            "total" => $total
+        ]);     
+    }
+
 }

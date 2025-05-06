@@ -34,8 +34,13 @@ Route::get("/visita", [VisitaController::class, 'findVisita'])->middleware('auth
 Route::put("/visita/{id}", [VisitaController::class, 'regitrarSalida'])->middleware('auth:sanctum');
 
 Route::post("/novedad-vehiculo", [NovVehiculosController::class, 'create'])->middleware('auth:sanctum');
+
 Route::post("/minuta", [MinutaController::class, 'create'])->middleware('auth:sanctum');
+Route::get("/minuta/{id}", [MinutaController::class, 'show'])->middleware('auth:sanctum');
+
 Route::post("/correspondencia", [CorrespondenciaController::class, 'create'])->middleware('auth:sanctum');
+Route::get("/correspondencia/{id}", [CorrespondenciaController::class, 'show'])->middleware('auth:sanctum');
+Route::put("/correspondencia/{id}", [CorrespondenciaController::class, 'update'])->middleware('auth:sanctum');
 
 Route::prefix('riesgo')->middleware("auth:sanctum")->group(function () {
     Route::get("/", [RiesgosController::class, 'show']);
