@@ -22,6 +22,9 @@ Route::get('/', function () {
             case 'admin':
                 return redirect(route('propiedad.tabla'));
                 break;
+            default:
+                return redirect(route('propiedad.tabla'));
+                break;
         }
     }
     return view('auth.login');
@@ -48,7 +51,7 @@ Route::get('/cache', function () {
 
 Route::group([
     'prefix' => 'propiedad',
-    'middleware' => ['auth', 'user-role:admin']
+    'middleware' => ['auth', 'user-role:admin|admin_sede']
 ], function () {
     Route::get("/", [PropiedadesController::class, 'mostrarTabla'])->name("propiedad.tabla");
     Route::get("/agregar", [PropiedadesController::class, 'mostrarAgregar'])->name("propiedad.agregar");
@@ -84,7 +87,7 @@ Route::group([
 
 Route::group([
     'prefix' => 'rondas',
-    'middleware' => ['auth', 'user-role:admin']
+    'middleware' => ['auth', 'user-role:admin|admin_sede']
 ], function () {
     Route::get("/", [RondasController::class, 'mostrarTablaRecorridos'])->name("rondas.tablaRecorridos");
     Route::get("/ver/{idRecorrido}", [RondasController::class, 'verRecorrido'])->name("rondas.verRecorrido");
@@ -105,7 +108,7 @@ Route::group([
 
 Route::group([
     'prefix' => 'novedades',
-    'middleware' => ['auth', 'user-role:admin']
+    'middleware' => ['auth', 'user-role:admin|admin_sede']
 ], function () {
     Route::get("/", [NovParqueaderoController::class, 'mostrarTabla'])->name("novedad.tabla");
     Route::get("/ver/{id}", [NovParqueaderoController::class, 'verDetalles'])->name("novedad.verDetalles");
@@ -114,7 +117,7 @@ Route::group([
 
 Route::group([
     'prefix' => 'minutas',
-    'middleware' => ['auth', 'user-role:admin']
+    'middleware' => ['auth', 'user-role:admin|admin_sede']
 ], function () {
     Route::get("/", [MinutaController::class, 'mostrarTabla'])->name("minuta.tabla");
     Route::get("/ver/{id}", [MinutaController::class, 'verDetalles'])->name("minuta.verDetalles");
@@ -124,7 +127,7 @@ Route::group([
 
 Route::group([
     'prefix' => 'paquetes',
-    'middleware' => ['auth', 'user-role:admin']
+    'middleware' => ['auth', 'user-role:admin|admin_sede']
 ], function () {
     Route::get("/", [BuzonController::class, 'mostrarTabla'])->name("paquetes.tabla");
     Route::get("/ver/{id}", [BuzonController::class, 'verDetalles'])->name("paquetes.verDetalles");
@@ -136,7 +139,7 @@ Route::group([
 
 Route::group([
     'prefix' => 'visitas',
-    'middleware' => ['auth', 'user-role:admin']
+    'middleware' => ['auth', 'user-role:admin|admin_sede']
 ], function () {
     Route::get("/", [VisitasController::class, 'mostrarTabla'])->name("visitas.tabla");
     Route::get("/ver/{id}", [VisitasController::class, 'verDetalles'])->name("visitas.verDetalles");
@@ -145,7 +148,7 @@ Route::group([
 
 Route::group([
     'prefix' => 'riesgos',
-    'middleware' => ['auth', 'user-role:admin']
+    'middleware' => ['auth', 'user-role:admin|admin_sede']
 ], function () {
     Route::get("/", [RiesgosController::class, 'mostrarTabla'])->name("riesgos.tabla");
     Route::get("/ver/{id}", [RiesgosController::class, 'verDetalles'])->name("riesgos.verDetalles");

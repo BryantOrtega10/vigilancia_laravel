@@ -28,7 +28,18 @@ class PropiedadesController extends Controller
 {
     public function mostrarTabla()
     {
-        $sedes = SedeModel::orderBy("nombre")->get();
+        $usuario = Auth::user();
+        if ($usuario->rol == "admin") {
+            $sedes = SedeModel::orderBy("nombre")->get();
+        } else {
+            $sedes = SedeModel::select("sede.*")
+                ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                ->where("us.fk_user", "=", $usuario->id)
+                ->orderBy("sede.nombre")
+                ->get();
+        }
+
+
         return view('propiedad.tabla', [
             'sedes' => $sedes
         ]);
@@ -56,7 +67,9 @@ class PropiedadesController extends Controller
 
     public function mostrarModificar($id)
     {
-
+        if (!$this->validarSede($id)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $sede = SedeModel::findOrFail($id);
         $tipos_propiedad = TipoSedeModel::orderBy("nombre")->get();
 
@@ -67,7 +80,9 @@ class PropiedadesController extends Controller
     }
     public function modificar($id, PropiedadRequest $request)
     {
-
+        if (!$this->validarSede($id)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $sede = SedeModel::find($id);
         $sede->nombre = $request->input("nombre");
         $sede->direccion = $request->input("direccion");
@@ -82,6 +97,9 @@ class PropiedadesController extends Controller
 
     public function eliminar($id)
     {
+        if (!$this->validarSede($id)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $sede = SedeModel::findOrFail($id);
         $sedePropiedad = GrPropiedadModel::where("fk_sede", "=", $sede->id)->count();
         if ($sedePropiedad > 0) {
@@ -95,7 +113,9 @@ class PropiedadesController extends Controller
 
     public function mostrarConfig($id)
     {
-
+        if (!$this->validarSede($id)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $sede = SedeModel::findOrFail($id);
         $grupos = GrPropiedadModel::where("fk_sede", "=", $id)->orderBy("nombre")->get();
         return view('propiedad.config', [
@@ -106,6 +126,9 @@ class PropiedadesController extends Controller
 
     public function mostrarAgregarGrupo($id)
     {
+        if (!$this->validarSede($id)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $sede = SedeModel::findOrFail($id);
         $tipos_grupo = TipoGrPropiedadModel::orderBy("nombre")->get();
 
@@ -117,6 +140,9 @@ class PropiedadesController extends Controller
 
     public function agregarGrupo($id, GrupoPropiedadRequest $request)
     {
+        if (!$this->validarSede($id)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $grupo = new GrPropiedadModel();
         $grupo->nombre = $request->input("nombre");
         $grupo->fk_tipo_gr_propiedad = $request->input("tipo_grupo");
@@ -130,6 +156,9 @@ class PropiedadesController extends Controller
     public function mostrarModificarGrupo($id)
     {
         $grupo = GrPropiedadModel::findOrFail($id);
+        if (!$this->validarSede($grupo->fk_sede)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $sede = $grupo->sede;
         $tipos_grupo = TipoGrPropiedadModel::orderBy("nombre")->get();
 
@@ -143,16 +172,22 @@ class PropiedadesController extends Controller
     public function modificarGrupo($id, GrupoPropiedadRequest $request)
     {
         $grupo = GrPropiedadModel::findOrFail($id);
+        if (!$this->validarSede($grupo->fk_sede)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $grupo->nombre = $request->input("nombre");
         $grupo->fk_tipo_gr_propiedad = $request->input("tipo_grupo");
         $grupo->save();
 
         return redirect(route('propiedad.config', ['id' => $grupo->fk_sede]))->with('mensaje', 'Grupo de propiedades modificado correctamente');
     }
-    
+
     public function eliminarGrupo($id)
     {
         $grupo = GrPropiedadModel::findOrFail($id);
+        if (!$this->validarSede($grupo->fk_sede)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $propiedades = PropiedadModel::where("fk_gr_propiedad", "=", $grupo->id)->count();
         if ($propiedades > 0) {
             return redirect(route('propiedad.config'))->with('error', 'Grupo de propiedades ya tiene propiedades eliminalas para poder eliminar este grupo');
@@ -162,10 +197,13 @@ class PropiedadesController extends Controller
 
         return redirect(route('propiedad.config', ['id' => $fk_sede]))->with('mensaje', 'Grupo de propiedades eliminada correctamente');
     }
-    
+
     public function mostrarAgregarItem($id)
     {
         $grupo = GrPropiedadModel::findOrFail($id);
+        if (!$this->validarSede($grupo->fk_sede)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $sede = $grupo->sede;
 
         $ultimaPropiedad = PropiedadModel::where("fk_gr_propiedad", "=", $id)->orderBy(DB::raw("CAST(nombre as signed)"), "desc")->first();
@@ -181,7 +219,7 @@ class PropiedadesController extends Controller
             $olds = Session::getOldInput();
             $vehiculos = sizeof($olds['vehiculo']);
             $residentes = sizeof($olds['residente_n']);
-        }        
+        }
 
 
         return view('propiedad.item.agregar', [
@@ -196,7 +234,10 @@ class PropiedadesController extends Controller
 
     public function agregarItem($id, ItemRequest $request)
     {
-
+        $grupo = GrPropiedadModel::findOrFail($id);
+        if (!$this->validarSede($grupo->fk_sede)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         if ($request->input('nombres') != "" && $request->input('apellidos') != "") {
             $propietario = new PropietarioModel();
             $propietario->nombres = $request->input('nombres');
@@ -215,7 +256,7 @@ class PropiedadesController extends Controller
         }
         $propiedad->fk_gr_propiedad = $id;
         $propiedad->save();
-        if($request->input("vehiculo") != null){
+        if ($request->input("vehiculo") != null) {
             foreach ($request->input("vehiculo") as $row => $input_vehiculo) {
                 if ($input_vehiculo != "") {
                     $vehiculo = new VehiculoModel();
@@ -227,7 +268,7 @@ class PropiedadesController extends Controller
             }
         }
 
-        if($request->input("residente_n") != null){
+        if ($request->input("residente_n") != null) {
             foreach ($request->input("residente_n") as $row => $residente_n) {
                 if ($residente_n != "") {
                     $residente = new ResidenteModel();
@@ -246,10 +287,13 @@ class PropiedadesController extends Controller
     {
         $propiedad = PropiedadModel::findOrFail($id);
         $grupo = $propiedad->gr_propiedad;
+        if (!$this->validarSede($grupo->fk_sede)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $sede = $grupo->sede;
         $propietario = $propiedad->propietario;
-        $vehiculos = VehiculoModel::where("fk_propiedad","=",$id)->get();
-        $residentes = ResidenteModel::where("fk_propiedad","=",$id)->get();
+        $vehiculos = VehiculoModel::where("fk_propiedad", "=", $id)->get();
+        $residentes = ResidenteModel::where("fk_propiedad", "=", $id)->get();
 
         return view('propiedad.item.modificar', [
             'sede' => $sede,
@@ -264,15 +308,17 @@ class PropiedadesController extends Controller
     public function modificarItem($id, ItemRequest $request)
     {
         $propiedad = PropiedadModel::findOrFail($id);
-        
+        $grupo = $propiedad->gr_propiedad;
+        if (!$this->validarSede($grupo->fk_sede)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         if ($request->input('nombres') != "" && $request->input('apellidos') != "") {
-            if(isset($propiedad->propietario)){
+            if (isset($propiedad->propietario)) {
                 $propietario = $propiedad->propietario;
-            }
-            else{
+            } else {
                 $propietario = new PropietarioModel();
             }
-            
+
             $propietario->nombres = $request->input('nombres');
             $propietario->apellidos = $request->input('apellidos');
             $propietario->celular_p = $request->input('celular_p');
@@ -288,21 +334,20 @@ class PropiedadesController extends Controller
 
 
         //Verificar vehiculos eliminados
-        if($request->input("vehiculo") != null){
-            VehiculoModel::where("fk_propiedad","=",$id)
-                ->whereNotIn("placa",$request->input("vehiculo"))
+        if ($request->input("vehiculo") != null) {
+            VehiculoModel::where("fk_propiedad", "=", $id)
+                ->whereNotIn("placa", $request->input("vehiculo"))
                 ->delete();
-        }
-        else{
-            VehiculoModel::where("fk_propiedad","=",$id)
+        } else {
+            VehiculoModel::where("fk_propiedad", "=", $id)
                 ->delete();
         }
 
-        if($request->input("vehiculo") != null){
+        if ($request->input("vehiculo") != null) {
             foreach ($request->input("vehiculo") as $row => $input_vehiculo) {
                 if ($input_vehiculo != "") {
-                    $vehiculo = VehiculoModel::where("fk_propiedad","=",$id)->where("placa","=",$input_vehiculo)->first();
-                    if(!isset($vehiculo)){
+                    $vehiculo = VehiculoModel::where("fk_propiedad", "=", $id)->where("placa", "=", $input_vehiculo)->first();
+                    if (!isset($vehiculo)) {
                         $vehiculo = new VehiculoModel();
                     }
                     $vehiculo->placa = $input_vehiculo;
@@ -312,24 +357,23 @@ class PropiedadesController extends Controller
                 }
             }
         }
-        
+
 
 
         //Verificar residentes eliminados
-        if($request->input("residente_n") != null){
-            ResidenteModel::where("fk_propiedad","=",$id)
-                ->whereNotIn("nombre",$request->input("residente_n"))
+        if ($request->input("residente_n") != null) {
+            ResidenteModel::where("fk_propiedad", "=", $id)
+                ->whereNotIn("nombre", $request->input("residente_n"))
                 ->delete();
-        }
-        else{
-            ResidenteModel::where("fk_propiedad","=",$id)->delete();
+        } else {
+            ResidenteModel::where("fk_propiedad", "=", $id)->delete();
         }
 
-        if($request->input("residente_n") != null){
+        if ($request->input("residente_n") != null) {
             foreach ($request->input("residente_n") as $row => $residente_n) {
                 if ($residente_n != "") {
-                    $residente = ResidenteModel::where("fk_propiedad","=",$id)->where("nombre","=",$residente_n)->first();
-                    if(!isset($residente)){
+                    $residente = ResidenteModel::where("fk_propiedad", "=", $id)->where("nombre", "=", $residente_n)->first();
+                    if (!isset($residente)) {
                         $residente = new ResidenteModel();
                     }
                     $residente->nombre = $residente_n;
@@ -346,7 +390,10 @@ class PropiedadesController extends Controller
     public function eliminarItem($id)
     {
         $propiedad = PropiedadModel::findOrFail($id);
-
+        $grupo = $propiedad->gr_propiedad;
+        if (!$this->validarSede($grupo->fk_sede)) {
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $visitas = VisitaModel::where("fk_propiedad", "=", $propiedad->id)->count();
         if ($visitas > 0) {
             return redirect(route('propiedad.config'))->with('error', 'La propiedad ya tiene datos asociados, si desea eliminarla contacte con el administrador');
@@ -354,15 +401,16 @@ class PropiedadesController extends Controller
         $paquetes = PaqueteModel::where("fk_propiedad", "=", $propiedad->id)->count();
         if ($paquetes > 0) {
             return redirect(route('propiedad.config'))->with('error', 'La propiedad ya tiene datos asociados, si desea eliminarla contacte con el administrador');
-        }        
+        }
         $fk_sede = $propiedad->gr_propiedad->fk_sede;
-        PropietarioModel::where("id","=",$propiedad->fk_propietario)->delete();
+        PropietarioModel::where("id", "=", $propiedad->fk_propietario)->delete();
         $propiedad->delete();
 
         return redirect(route('propiedad.config', ['id' => $fk_sede]))->with('mensaje', 'Propiedad eliminada correctamente');
     }
 
-    public function subirCSV(Request $request){
+    public function subirCSV(Request $request)
+    {
         $errors = array();
         $folder = "csv/";
         $file_name =  time() . "_.csv";
@@ -414,23 +462,34 @@ class PropiedadesController extends Controller
                 //9 = vehiculo1
 
                 //Buscar Sede
-                $sede = SedeModel::where("nombre","like",trim($row[0]))->first();
-                if(!isset($sede)){
+                $usuario = Auth::user();
+                if ($usuario->rol == "admin") {
+                    $sede = SedeModel::where("nombre", "like", trim($row[0]))->first();
+                } else {
+                    $sede = SedeModel::select("sede.*")
+                        ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                        ->where("us.fk_user", "=", $usuario->id)
+                        ->where("sede.nombre", "like", trim($row[0]))->first()
+                        ->get();
+                }
+
+
+                if (!isset($sede)) {
                     array_push($errors, "Sede no encontrada en la linea " . ($index + 1));
                     continue;
                 }
 
-                $grupo = GrPropiedadModel::where("nombre","like",trim($row[1]))->where("fk_sede","=",$sede->id)->first();
-                if(!isset($grupo)){
+                $grupo = GrPropiedadModel::where("nombre", "like", trim($row[1]))->where("fk_sede", "=", $sede->id)->first();
+                if (!isset($grupo)) {
                     $grupo = new GrPropiedadModel();
                     $grupo->nombre = trim($row[1]);
                     $grupo->fk_sede = $sede->id;
                     $grupo->save();
                 }
 
-                $propiedadVerif = PropiedadModel::where("nombre","like",trim($row[2]))->where("fk_gr_propiedad","=",$grupo->id)->first();
-                if(isset($propiedadVerif)){
-                    array_push($errors, "Ya existe la propiedad ".$row[2]." en la linea " . ($index + 1));
+                $propiedadVerif = PropiedadModel::where("nombre", "like", trim($row[2]))->where("fk_gr_propiedad", "=", $grupo->id)->first();
+                if (isset($propiedadVerif)) {
+                    array_push($errors, "Ya existe la propiedad " . $row[2] . " en la linea " . ($index + 1));
                     continue;
                 }
 
@@ -441,17 +500,17 @@ class PropiedadesController extends Controller
                 $propietario->celular_s = trim($row[6]);
                 $propietario->email = trim($row[7]);
                 $propietario->save();
-                
-                
+
+
                 $propiedad = new PropiedadModel();
                 $propiedad->nombre = trim($row[2]);
                 $propiedad->fk_propietario = $propietario->id;
                 $propiedad->fk_gr_propiedad = $grupo->id;
                 $propiedad->save();
 
-                
-                for($i=8; $i<=100; $i=$i+2){
-                    if(!isset($row[$i]) || !isset($row[$i + 1])){
+
+                for ($i = 8; $i <= 100; $i = $i + 2) {
+                    if (!isset($row[$i]) || !isset($row[$i + 1])) {
                         break;
                     }
 
@@ -465,10 +524,9 @@ class PropiedadesController extends Controller
                 }
                 $cuentaSubidos++;
                 //Cargar propiedades
-                
 
-            }
-            catch (Exception $e) {
+
+            } catch (Exception $e) {
                 array_push($errors, "Error " . $e->getMessage() . ", line: " . $e->getLine() . " on row " . ($index + 1));
             }
         }
@@ -480,9 +538,24 @@ class PropiedadesController extends Controller
         } else {
             return response()->json([
                 "success" => true,
-                "message" => "Propiedades agregadas!, ".$cuentaSubidos." registros agregados"
+                "message" => "Propiedades agregadas!, " . $cuentaSubidos . " registros agregados"
             ]);
         }
-        
+    }
+    private function validarSede($id)
+    {
+        $usuario = Auth::user();
+        if ($usuario->rol != "admin") {
+            $sede = SedeModel::select("sede.*")
+                ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                ->where("us.fk_user", "=", $usuario->id)
+                ->where("sede.id", "=", $id)
+                ->orderBy("sede.nombre")
+                ->first();
+            if (!isset($sede)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

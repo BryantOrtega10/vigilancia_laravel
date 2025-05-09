@@ -14,15 +14,33 @@ use Illuminate\Http\Request;
 class RiesgosController extends Controller
 {
     public function mostrarTabla(Request $request)
-    {        
-        $riesgos = RiesgoModel::select("riesgo.*");
-        if($request->has("inactivos") && $request->input("inactivos") == 1){
-            $riesgos = $riesgos->whereIn("estado",[1,0]);
+    {       
+
+        $usuario = Auth::user();
+        if ($usuario->rol == "admin") {
+            $riesgos = RiesgoModel::select("riesgo.*");
+            if($request->has("inactivos") && $request->input("inactivos") == 1){
+                $riesgos = $riesgos->whereIn("estado",[1,0]);
+            }
+            else{
+                $riesgos = $riesgos->where("estado","=",1);
+            }
+            $riesgos = $riesgos->orderBy("updated_at","DESC")->get();
         }
         else{
-            $riesgos = $riesgos->where("estado","=",1);
+            $riesgos = RiesgoModel::select("riesgo.*")
+                ->join("sede", "sede.id", "=", "riesgo.fk_sede")
+                ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                ->where("us.fk_user", "=", $usuario->id);
+            if($request->has("inactivos") && $request->input("inactivos") == 1){
+                $riesgos = $riesgos->whereIn("riesgo.estado",[1,0]);
+            }
+            else{
+                $riesgos = $riesgos->where("riesgo.estado","=",1);
+            }
+            $riesgos = $riesgos->orderBy("updated_at","DESC")->get();
         }
-        $riesgos = $riesgos->orderBy("updated_at","DESC")->get();
+        
 
         return view('riesgos.tabla', [
             'riesgos' => $riesgos
@@ -31,6 +49,9 @@ class RiesgosController extends Controller
 
     public function verDetalles($id){
         $riesgo = RiesgoModel::find($id);
+        if(!$this->validarSede($riesgo->fk_sede)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $logs = RiesgoLogModel::where("fk_riesgo","=",$id)->take(5)->orderBy("id","desc")->get();
         return view('riesgos.verDetalle', [
             'logs' => $logs,
@@ -42,6 +63,9 @@ class RiesgosController extends Controller
         $usuario = Auth::user();
 
         $riesgo = RiesgoModel::find($id);
+        if(!$this->validarSede($riesgo->fk_sede)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $descripcion = "";
         if($riesgo->descripcion != $request->input("descripcion")){
             $descripcion = $request->input("descripcion");
@@ -66,8 +90,16 @@ class RiesgosController extends Controller
     }
     
     public function mostrarFormMatriz(){
-        $sedes = SedeModel::orderBy("nombre")->get();
-
+        $usuario = Auth::user();
+        if ($usuario->rol == "admin") {
+            $sedes = SedeModel::orderBy("nombre")->get();
+        } else {
+            $sedes = SedeModel::select("sede.*")
+                ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                ->where("us.fk_user", "=", $usuario->id)
+                ->orderBy("sede.nombre")
+                ->get();
+        }
         return view('riesgos.matriz', [
             'sedes' => $sedes
         ]);
@@ -77,7 +109,9 @@ class RiesgosController extends Controller
     public function generarPdfMatriz(MatrizRequest $request){
         $riesgos = RiesgoModel::where('fk_sede',"=",$request->input("sede"))->orderBy("impacto","desc")->get();
         $sede = SedeModel::find($request->input("sede"));
-
+        if(!$this->validarSede($sede->id)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $pdf = Pdf::loadView('riesgos.pdf', [
             'riesgos' => $riesgos,
             'sede' => $sede
@@ -87,4 +121,20 @@ class RiesgosController extends Controller
         return $pdf->download("Matriz riesgos ".$sede->nombre." - ".date("Y_m_d H_i").".pdf");
     }
     
+    private function validarSede($id)
+    {
+        $usuario = Auth::user();
+        if ($usuario->rol != "admin") {
+            $sede = SedeModel::select("sede.*")
+                ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                ->where("us.fk_user", "=", $usuario->id)
+                ->where("sede.id", "=", $id)
+                ->orderBy("sede.nombre")
+                ->first();
+            if (!isset($sede)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

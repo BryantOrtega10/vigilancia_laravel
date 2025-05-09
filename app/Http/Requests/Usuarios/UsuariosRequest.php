@@ -26,6 +26,7 @@ class UsuariosRequest extends FormRequest
             'nombre' => 'required',
             'email' => 'required|unique:users,email',
             'password' => 'required',
+            'rol' => 'required',
             'repetir_password' => 'same:password',
         ];
 

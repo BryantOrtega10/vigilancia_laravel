@@ -49,7 +49,9 @@
                             <td>{{ $recorrido->user->name }}</td>
                             <td class="text-right">
                                 <a href="{{ route('rondas.verRecorrido',['idRecorrido' => $recorrido->id])}}" class="btn btn-outline-success ver_recorrido"><i class="fas fa-eye"></i> Ver</a>
-                                <a href="{{ route('rondas.eliminarRecorrido',['idRecorrido' => $recorrido->id])}}" class="btn btn-danger preguntar" data-mensaje="Eliminar el recorrido"><i class="fas fa-trash"></i> Eliminar</a>
+                                @can('rondas.eliminarRecorrido')
+                                    <a href="{{ route('rondas.eliminarRecorrido',['idRecorrido' => $recorrido->id])}}" class="btn btn-danger preguntar" data-mensaje="Eliminar el recorrido"><i class="fas fa-trash"></i> Eliminar</a>
+                                @endcan
                             </td>
                         </tr>
                     @endforeach

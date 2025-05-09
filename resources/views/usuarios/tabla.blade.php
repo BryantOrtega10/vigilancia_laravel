@@ -32,8 +32,9 @@
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>Propiedades</th>
+                        <th>Sedes</th>
                         <th>Email</th>
+                        <th>Rol</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -43,6 +44,7 @@
                             <td>{{ $usuario->name }}</td>
                             <td>{{ $usuario->sedes_txt() }}</td>
                             <td>{{ $usuario->email }}</td>
+                            <td>{{ $usuario->txt_rol }}</td>
                             <td class="text-right">
                                 <a href="{{ route('usuarios.modificar',['id' => $usuario->id])}}" class="btn btn-secondary"><i class="fas fa-pen"></i> Modificar</a>
                                 <a href="{{ route('usuarios.eliminar',['id' => $usuario->id])}}" class="btn btn-danger preguntar" data-mensaje="Eliminar el usuario"><i class="fas fa-trash"></i> Eliminar</a>

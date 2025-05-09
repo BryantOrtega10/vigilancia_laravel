@@ -9,12 +9,25 @@ use App\Models\SedeModel;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RondasController extends Controller
 {
     public function mostrarTablaRecorridos()
     {
-        $recorridos = RecorridoModel::orderBy("fecha_hora","DESC")->get();
+        $usuario = Auth::user();
+        if ($usuario->rol == "admin") {
+            $recorridos = RecorridoModel::orderBy("fecha_hora","DESC")->get();
+        }
+        else{
+            $recorridos = RecorridoModel::select("recorrido.*")
+                                        ->join("ronda", "ronda.id", "=", "recorrido.fk_ronda")
+                                        ->join("sede", "sede.id", "=", "ronda.fk_sede")
+                                        ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                                        ->where("us.fk_user", "=", $usuario->id)
+                                        ->orderBy("recorrido.fecha_hora","DESC")
+                                        ->get();
+        }
         return view('rondas.tabla', [
             'recorridos' => $recorridos
         ]);
@@ -23,6 +36,9 @@ class RondasController extends Controller
     public function verRecorrido($idRecorrido)
     {
         $recorrido = RecorridoModel::findOrFail($idRecorrido);
+        if(!$this->validarSede($recorrido->ronda->fk_sede)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $builder = new Builder(
             data: $recorrido->ronda->codigo_qr,
             encoding: new Encoding('UTF-8'),
@@ -40,6 +56,9 @@ class RondasController extends Controller
     public function eliminarRecorrido($idRecorrido)
     {
         $recorrido = RecorridoModel::findOrFail($idRecorrido);
+        if(!$this->validarSede($recorrido->ronda->fk_sede)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $recorrido->delete();
 
         return redirect(route('rondas.tablaRecorridos'))->with('mensaje', 'Recorrido eliminado correctamente');
@@ -48,11 +67,27 @@ class RondasController extends Controller
 
     public function mostrarQRs(Request $request)
     {
-        $rondas = RondaModel::select("ronda.*");
-        if($request->input("sede") != null){
-            $rondas->where("fk_sede","=",$request->input("sede"));
+        $usuario = Auth::user();
+        if ($usuario->rol == "admin") {
+            $rondas = RondaModel::select("ronda.*");
+            if($request->input("sede") != null){
+                $rondas->where("fk_sede","=",$request->input("sede"));
+            }
+            $rondas = $rondas->orderBy("nombre","ASC")->get();
         }
-        $rondas = $rondas->orderBy("nombre","ASC")->get();
+        else{
+            $rondas = RondaModel::select("ronda.*")
+                                ->join("sede", "sede.id", "=", "ronda.fk_sede")
+                                ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                                ->where("us.fk_user", "=", $usuario->id);
+
+            if($request->input("sede") != null){
+                $rondas->where("fk_sede","=",$request->input("sede"));
+            }
+            $rondas = $rondas->orderBy("nombre","ASC")->get();
+        }
+
+        
 
         foreach($rondas as $ronda){
             $builder = new Builder(
@@ -74,7 +109,18 @@ class RondasController extends Controller
     }
     public function mostrarAgregar()
     {
-        $sedes = SedeModel::orderBy("nombre","ASC")->get();
+        $usuario = Auth::user();
+        if ($usuario->rol == "admin") {
+            $sedes = SedeModel::orderBy("nombre")->get();
+        }
+        else{
+            $sedes = SedeModel::select("sede.*")
+            ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+            ->where("us.fk_user", "=", $usuario->id)
+            ->orderBy("sede.nombre")
+            ->get();
+        }
+
         return view('rondas.agregar', [
             'sedes' => $sedes
         ]);
@@ -93,7 +139,20 @@ class RondasController extends Controller
     public function mostrarModificar($idRonda)
     {
         $ronda = RondaModel::findOrFail($idRonda);
-        $sedes = SedeModel::orderBy("nombre","ASC")->get();
+        if(!$this->validarSede($ronda->fk_sede)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
+        $usuario = Auth::user();
+        if ($usuario->rol == "admin") {
+            $sedes = SedeModel::orderBy("nombre")->get();
+        }
+        else{
+            $sedes = SedeModel::select("sede.*")
+            ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+            ->where("us.fk_user", "=", $usuario->id)
+            ->orderBy("sede.nombre")
+            ->get();
+        }
 
         return view('rondas.modificar', [
             'sedes' => $sedes,
@@ -104,6 +163,9 @@ class RondasController extends Controller
     {
 
         $ronda = RondaModel::findOrFail($idRonda);
+        if(!$this->validarSede($ronda->fk_sede)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $ronda->nombre = $request->input("nombre");
         $ronda->save();
 
@@ -113,6 +175,9 @@ class RondasController extends Controller
     public function eliminar($idRonda)
     {
         $ronda = RondaModel::findOrFail($idRonda);
+        if(!$this->validarSede($ronda->fk_sede)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $recorridosRonda = RecorridoModel::where("fk_ronda", "=", $ronda->id)->count();
         if ($recorridosRonda > 0) {
             return redirect(route('rondas.vistaQRs'))->with('error', 'Ronda no puede ser eliminada ya tiene recorridos relacionados');
@@ -125,6 +190,9 @@ class RondasController extends Controller
     public function descargarQR($idRonda)
     {
         $ronda = RondaModel::findOrFail($idRonda);
+        if(!$this->validarSede($ronda->fk_sede)){
+            return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
+        }
         $builder = new Builder(
             data: $ronda->codigo_qr,
             encoding: new Encoding('UTF-8'),
@@ -142,4 +210,20 @@ class RondasController extends Controller
         ]);
     }
 
+    private function validarSede($id)
+    {
+        $usuario = Auth::user();
+        if ($usuario->rol != "admin") {
+            $sede = SedeModel::select("sede.*")
+                ->join("users_sede as us", "us.fk_sede", "=", "sede.id")
+                ->where("us.fk_user", "=", $usuario->id)
+                ->where("sede.id", "=", $id)
+                ->orderBy("sede.nombre")
+                ->first();
+            if (!isset($sede)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

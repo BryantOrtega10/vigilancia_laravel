@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,6 +52,16 @@ class User extends Authenticatable
 
     public function user_sede(){
         return $this->hasMany(UserSedeModel::class, "fk_user","id");
+    }
+
+    public function txtRol() :Attribute {
+        return Attribute::make(
+            get: fn () => [
+                "admin" => "Superadministrador",
+                "vigilante" => "Vigilante",
+                "admin_sede" => "Administrador de sede"
+            ][$this->rol]
+        );
     }
 
     public function sedes_txt(){

@@ -38,7 +38,7 @@ class UsuariosController extends Controller
         $usuario->name = $request->input("nombre");
         $usuario->email = $request->input("email");
         $usuario->password = Hash::make($request->input("password"));
-        $usuario->rol = 'vigilante';
+        $usuario->rol = $request->input("rol");
         $usuario->save();
 
         if($request->input("propiedad") != null){
@@ -78,6 +78,7 @@ class UsuariosController extends Controller
         $usuario = User::findOrFail($id);
         $usuario->name = $request->input("nombre");
         $usuario->email = $request->input("email");
+        $usuario->rol = $request->input("rol");
         if($request->input("password") != ""){
             $usuario->password = Hash::make($request->input("password"));
         }

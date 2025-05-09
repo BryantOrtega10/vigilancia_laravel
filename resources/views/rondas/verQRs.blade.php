@@ -10,7 +10,9 @@
             <h1>Rondas</h1>
         </div>
         <div class="text-right col-md-3">
-            <a href="{{ route('rondas.agregar') }}" class="btn btn-outline-primary btn-flat"><i class="fas fa-plus"></i> Crear Ronda</a>
+            @can('rondas.agregar')
+                <a href="{{ route('rondas.agregar') }}" class="btn btn-outline-primary btn-flat"><i class="fas fa-plus"></i> Crear Ronda</a>
+            @endcan
         </div>
     </div>
     <nav aria-label="breadcrumb">
@@ -51,8 +53,12 @@
                             <td><img src="data:image/png;base64,{{ $ronda->img_qr }}" alt="QR Code" class="codigoQR_Preview"></td>
                             <td class="text-right">
                                 <a href="{{ route('rondas.descargar',['idRonda' => $ronda->id])}}" class="btn btn-outline-success"><i class="fas fa-download"></i> Descargar</a>
-                                <a href="{{ route('rondas.modificar',['idRonda' => $ronda->id])}}" class="btn btn-secondary"><i class="fas fa-pen"></i> Modificar</a>
-                                <a href="{{ route('rondas.eliminar',['idRonda' => $ronda->id])}}" class="btn btn-danger preguntar" data-mensaje="Eliminar la ronda"><i class="fas fa-trash"></i> Eliminar</a>                                
+                                @can('rondas.modificar')
+                                    <a href="{{ route('rondas.modificar',['idRonda' => $ronda->id])}}" class="btn btn-secondary"><i class="fas fa-pen"></i> Modificar</a>
+                                @endcan
+                                @can('rondas.eliminar')
+                                    <a href="{{ route('rondas.eliminar',['idRonda' => $ronda->id])}}" class="btn btn-danger preguntar" data-mensaje="Eliminar la ronda"><i class="fas fa-trash"></i> Eliminar</a>                                
+                                @endcan
                             </td>
                         </tr>
                     @endforeach
