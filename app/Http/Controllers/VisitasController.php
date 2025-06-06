@@ -7,6 +7,7 @@ use App\Models\VisitaModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Storage;
 
 class VisitasController extends Controller
 {
@@ -48,14 +49,26 @@ class VisitasController extends Controller
     }
 
     public function generarPdf($id){
+        
         $visita = VisitaModel::findOrFail($id);        
         $grupo = $visita->propiedad->gr_propiedad;
         if(!$this->validarSede($grupo->fk_sede)){
             return redirect(route('propiedad.tabla'))->with('error', 'Esta sede no esta asignada a tu usuario');
         }
+
+        foreach($visita->fotos as $foto){
+            $path = 'visitas/max_'.$foto->ruta;
+            if (!Storage::disk('public')->exists($path)) {
+                return response()->json(['error' => 'Archivo no encontrado'], 404);
+            }
+            $imagen = Storage::disk('public')->get($path);
+            $base64Img = base64_encode($imagen);
+            $foto->img_base64 = $base64Img;
+        }
+
         $pdf = Pdf::loadView('visitas.pdf', [
             'visita' => $visita
-        ])
+        ])->setOption('chroot', [dirname(__DIR__,3)])
         ->setPaper('A4');
         
         return $pdf->download("Entrada - Salida ".$visita->id." en ".$visita->propiedad->gr_propiedad->sede->nombre.".pdf");

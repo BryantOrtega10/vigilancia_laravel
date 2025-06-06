@@ -14,6 +14,7 @@ class VisitaModel extends Model
         "documento",
         "nombre",
         "observacion",
+        "observacion_salida",
         "responsable",
         "manejo_datos",
         "placa",
@@ -37,5 +38,9 @@ class VisitaModel extends Model
 
     public function user_salida(){
         return $this->belongsTo(User::class,'fk_user_salida','id');
+    }
+
+    public function fotos(){
+        return $this->hasMany(FotoModel::class, "fk_visita","id");
     }
 }

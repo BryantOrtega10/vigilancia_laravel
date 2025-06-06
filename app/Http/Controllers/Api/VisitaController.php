@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\VisitaRequest;
+use App\Http\Requests\Api\VisitaSalidaRequest;
+use App\Http\Utils\Funciones;
+use App\Models\FotoModel;
 use App\Models\VisitaModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Storage;
 
 class VisitaController extends Controller
 {
@@ -31,7 +35,6 @@ class VisitaController extends Controller
      */
     public function create(VisitaRequest $request)
     {
-
         $usuario = Auth::user();
         $visita = new VisitaModel();
         $visita->fecha_entrada = date("Y-m-d H:i:s");
@@ -40,13 +43,29 @@ class VisitaController extends Controller
         $visita->observacion = $request->input("observacion");
         $visita->responsable = $request->input("responsable");
         $visita->manejo_datos = $request->input("manejo_datos");
-        if ($request->has("placa") && $request->has("tipo_vehiculo_id")) {
+        if ($request->has("placa") && !empty($request->input("placa")) && $request->has("tipo_vehiculo_id") && !empty($request->input("tipo_vehiculo_id"))) {
             $visita->placa = $request->input("placa");
             $visita->fk_tipo_vehiculo = $request->input("tipo_vehiculo_id");
         }
         $visita->fk_propiedad = $request->input("propiedad_id");
         $visita->fk_user_entrada = $usuario->id;
         $visita->save();
+
+         //Subir fotos
+        $images = $request->input('images');
+        foreach($images as $base64Image){
+            $folder = "visitas/";
+            $file_name =  uniqid() . "_visita_" . $visita->id. ".png";
+            Funciones::subirBase64($base64Image, $folder.$file_name);
+            Funciones::resizeImage($folder, $file_name, "min", 100, 100);
+            Funciones::resizeImage($folder, $file_name, "max", 1000, 1000);
+            $fileFinal = $folder . $file_name;
+            Storage::delete($fileFinal);
+            $foto = new FotoModel();
+            $foto->fk_visita = $visita->id;
+            $foto->ruta = $file_name;
+            $foto->save();
+        }
 
         return response()->json([
             "success" => true,
@@ -68,7 +87,7 @@ class VisitaController extends Controller
      */
     public function findVisita(Request $request)
     {
-        $visitas = VisitaModel::with("tipo_vehiculo")->where("fk_propiedad", "=", $request->input("idPropiedad"))
+        $visitas = VisitaModel::with("tipo_vehiculo")->with("fotos")->where("fk_propiedad", "=", $request->input("idPropiedad"))
                         ->whereNull("fecha_salida")
                         ->orderBy("fecha_entrada")
                         ->get();
@@ -98,7 +117,7 @@ class VisitaController extends Controller
      * 
      * 
      */
-    public function regitrarSalida($id)
+    public function regitrarSalida($id, VisitaSalidaRequest $request)
     {
         $visita = VisitaModel::find($id);
         if(!isset($visita)){
@@ -108,6 +127,7 @@ class VisitaController extends Controller
             ],404); 
         }
         $usuario = Auth::user();
+        $visita->observacion_salida = $request->input("observacion_salida");
         $visita->fecha_salida = date("Y-m-d H:i:s");
         $visita->fk_user_salida = $usuario->id;
         $visita->save();

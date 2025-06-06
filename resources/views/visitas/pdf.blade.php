@@ -26,7 +26,14 @@
         .col-md-3 {
             width: 24%;
             display: inline-block;
+            vertical-align: top;
         }
+        .col-6 {
+            width: 45%;
+            display: inline-block;
+            vertical-align: top;
+        }
+
 
         .imagen-cont {
             width: 90%;
@@ -95,10 +102,24 @@
             </div>
         @endif
         <br>
+        @if (sizeof($visita->fotos) > 0)
+            <b>Imagenes</b><br>
+            <div class="row">
+                @foreach ($visita->fotos as $foto)
+                    <figure class="imagen-cont">
+                            <img src="data:image/png;base64,{{$foto->img_base64}}" style="max-width: 100%; max-height: 100%;"  />
+                        </figure>
+                @endforeach
+            </div>
+        @endif
         <div class="row">
-            <div class="col-12">
-                <b>Observaciones</b><br>
+            <div class="col-6">
+                <b>Observaciones Entrada</b><br>
                 <span>{{ $visita->observacion }}</span>
+            </div>
+            <div class="col-6">
+                <b>Observaciones Salida</b><br>
+                <span>{{ $visita->observacion_salida }}</span>
             </div>
             <div class="col-12">
                 <b>¿Autorizo el tratamiento de datos?</b><br>

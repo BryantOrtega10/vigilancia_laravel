@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class VisitaRequest extends FormRequest
+class VisitaSalidaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,15 +22,7 @@ class VisitaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'documento' => 'required',
-            'nombre' => 'required',
-            'observacion' => 'nullable',
-            'responsable' => 'required',
-            'manejo_datos' => 'required',
-            'placa' => 'nullable',
-            'tipo_vehiculo_id' => 'nullable',
-            'propiedad_id' => 'required',
-            "images.*" => 'nullable|string',
+            'observacion_salida' => 'nullable'
         ];
     }
 }

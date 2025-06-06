@@ -18,24 +18,24 @@
     </div>
     <div class="col-md-3 col-12">
         <b>Fecha de entrada</b><br>
-        <span>{{ date("Y/m/d", strtotime($visita->fecha_entrada)) }}</span>
+        <span>{{ date('Y/m/d', strtotime($visita->fecha_entrada)) }}</span>
     </div>
     <div class="col-md-3 col-12">
         <b>Hora de entrada</b><br>
-        <span>{{ date("H:i", strtotime($visita->fecha_entrada)) }}</span>
+        <span>{{ date('H:i', strtotime($visita->fecha_entrada)) }}</span>
     </div>
 </div>
 @if ($visita->fecha_salida != null)
-<br>
+    <br>
     <h5>Datos de la salida</h5>
     <div class="row">
         <div class="col-md-3 col-12">
             <b>Fecha de salida</b><br>
-            <span>{{ date("Y/m/d", strtotime($visita->fecha_salida)) }}</span>
+            <span>{{ date('Y/m/d', strtotime($visita->fecha_salida)) }}</span>
         </div>
         <div class="col-md-3 col-12">
             <b>Hora de salida</b><br>
-            <span>{{ date("H:i", strtotime($visita->fecha_salida)) }}</span>
+            <span>{{ date('H:i', strtotime($visita->fecha_salida)) }}</span>
         </div>
         <div class="col-md-3 col-12">
             <b>Vigilante salida</b><br>
@@ -56,7 +56,7 @@
     </div>
 </div>
 @if ($visita->placa != null)
-<br>
+    <br>
     <h5>Datos del vehiculo</h5>
     <div class="row">
         <div class="col-md-3 col-12">
@@ -70,10 +70,24 @@
     </div>
 @endif
 <br>
+@if (sizeof($visita->fotos) > 0)
+    <b>Imagenes</b><br>
+    <div class="row">
+        @foreach ($visita->fotos as $foto)
+            <figure class="col-md-4 col-12">
+                <img src="{{ Storage::url('visitas/max_' . $foto->ruta) }}" class="w-100" />
+            </figure>
+        @endforeach
+    </div>
+@endif
 <div class="row">
-    <div class="col-12">
-        <b>Observaciones</b><br>
+    <div class="col-6">
+        <b>Observaciones Entrada</b><br>
         <span>{{ $visita->observacion }}</span>
+    </div>
+    <div class="col-6">
+        <b>Observaciones Salida</b><br>
+        <span>{{ $visita->observacion_salida }}</span>
     </div>
     <div class="col-12">
         <b>¿Autorizo el tratamiento de datos?</b><br>
